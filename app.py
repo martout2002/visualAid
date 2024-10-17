@@ -10,6 +10,7 @@ from collections import deque
 import cv2 as cv
 import numpy as np
 import mediapipe as mp
+from pynput.mouse import Controller, Button
 import pyautogui
 
 from utils import CvFpsCalc
@@ -146,31 +147,33 @@ def main():
                 # Hand sign classification
                 hand_sign_id = keypoint_classifier(pre_processed_landmark_list)
 
+                mouse = Controller()
+
                 # Handle mouse control based on hand gesture
                 x, y = landmark_list[8]  # Use the index finger tip landmark (usually landmark 8)
-                screen_width, screen_height = pyautogui.size()
+                screen_width, screen_height = pyautogui.size()  # Get screen dimensions using pyautogui
                 mouse_x = int(screen_width * x / debug_image.shape[1])
                 mouse_y = int(screen_height * y / debug_image.shape[0])
 
                 if hand_sign_id == 2:  # Point gesture
-                    # Move the cursor
-                    pyautogui.moveTo(mouse_x, mouse_y)
+                # Move the cursor
+                    mouse.position = (mouse_x, mouse_y)
 
                 elif hand_sign_id == 1:  # Close hand gesture
-                    # Move the cursor and hold down the mouse
+                # Move the cursor and hold down the mouse
                     if not mouse_held:
-                        pyautogui.leftClick()
-                        pyautogui.mouseDown(mouse_x, mouse_y)
+                        mouse.click(Button.left)  # Perform a left click
+                        mouse.press(Button.left)  # Hold down the left mouse button
                         mouse_held = True
                     else:
-                        pyautosgui.moveTo(mouse_x, mouse_y)
+                        mouse.position = (mouse_x, mouse_y)  # Move the mouse while holding the button
 
                 else:  # Release the mouse if the hand is not closed or pointing
                     if mouse_held:
-                        pyautogui.mouseUp()
+                        mouse.release(Button.left)  # Release the left mouse button
                         mouse_held = False
                     else:
-                        pyautogui.moveTo(mouse_x, mouse_y)
+                        mouse.position = (mouse_x, mouse_y)  # Move the mouse if no gesture is detected
                 
                 
 
